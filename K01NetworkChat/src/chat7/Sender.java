@@ -14,9 +14,9 @@ public class Sender extends Thread{
 	//클라이언트가 접속시 사용했던 Socket객체를 기반으로 출력스트림 생성
 	public Sender (Socket socket, String name) {
 		this.socket = socket;
+		this.name=name;
 		try {
 			out = new PrintWriter(this.socket.getOutputStream(),true);
-			this.name=name;
 		}
 		catch(Exception e) {
 			System.out.println("예외>Sender>생성자:" + e);

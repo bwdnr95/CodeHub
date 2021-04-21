@@ -123,7 +123,7 @@ public class MultiServer {
 					/*
 					 방금 접속한 클라이언트를 제외한 나머지에게 입장을 알린다.
 					 */
-					sendAllMsg("",name+"님이 입장하셨습니다.");
+					sendAllMsg("",name+"님이 입장하셨습니다.","All");
 					//현재 접속한 클라이언트를 HashMap에 저장한다.
 					clientMap.put(name, out);
 					
@@ -141,8 +141,25 @@ public class MultiServer {
 						if(s==null) break;
 						//서버의 콘솔에 출력되고
 						System.out.println(name + ">>" + s);
+						
+						
+						
 						//클라이언트 측으로 전송한다.
-						sendAllMsg(name,s);
+						if(s.charAt(0)=='/') {
+							String[] strArr = s.split(" ");
+							String msgContent = "";
+							for(int i=2; i<strArr.length; i++) {
+								msgContent += strArr[i]+ " ";
+							}
+							if(strArr[0].equals("/to")) {
+								sendAllMsg(strArr[1], msgContent, "One");
+							}
+						}
+						else {
+							sendAllMsg(name,s,"All");
+						}
+						
+						
 					}
 				}
 				
@@ -157,7 +174,7 @@ public class MultiServer {
 				 삭제한다.
 				 */
 				clientMap.remove(name);
-				sendAllMsg("", name+"님이 퇴장하셨습니다.");
+				sendAllMsg("", name+"님이 퇴장하셨습니다.","All");
 				System.out.println(name + "["+ Thread.currentThread().getName()+"] 퇴장");
 				System.out.println("현재 접속자 수는" + clientMap.size()+"명 입니다.");
 				
@@ -172,7 +189,7 @@ public class MultiServer {
 			}
 		}
 		//접속된 모든 클라이언트 측으로 서버의 메세지를 Echo해주는 역할 담당
-		public void sendAllMsg(String name, String msg) {
+		public void sendAllMsg(String name, String msg, String flag) {
 			
 			//Map에 저장된 객체의 키값(대화명)을 먼저 얻어온다.
 			Iterator<String> it = clientMap.keySet().iterator();
@@ -180,20 +197,36 @@ public class MultiServer {
 			//저장된 객체(클라이언트)의 갯수만큼 반복한다.
 			while(it.hasNext()) {
 				try {
+					//컬렉션의 key는 클라이언트의 대화명이다.
+					String clientName = it.next();
 					//각 클라이언트의 PrintWriter객체를 얻어온다.
-					PrintWriter it_out = (PrintWriter)clientMap.get(it.next());
+					PrintWriter it_out = (PrintWriter)clientMap.get(clientName);
 					
-					/*
-					 클라이언트에게 메세지를 전달할때 매개변수로 name이
-					 있는 경우와 없는경우를 구분해서 전달하게 된다.
-					 */
-					if(name.equals("")) {
-						//입장,퇴장에서 사용되는 부분
-						it_out.println(msg);
+					if(flag.equals("One")) {
+						//flag가 One이면 해당클라이언트 한명에게만 전송한다(귓속말)
+						
+						if(name.equals(clientName)) {
+							//컬렉션에 저장된 접속자명과 일치하는 경우에만 메세지를 전송한다.
+							it_out.println("[귓속말]"+msg);
+						}
+						
 					}
 					else {
-						//메세지를 보낼때 사용되는 부분
-						it_out.println("["+name+"]:"+msg);
+						//그외에는 모든 클라이언트에게 전송한다
+						
+						/*
+					 클라이언트에게 메세지를 전달할때 매개변수로 name이
+					 있는 경우와 없는경우를 구분해서 전달하게 된다.
+						 */
+						if(name.equals("")) {
+							//입장,퇴장에서 사용되는 부분
+							it_out.println(msg);
+						}
+						else {
+							//메세지를 보낼때 사용되는 부분
+							it_out.println("["+name+"]:"+msg);
+						}
+						
 					}
 				}
 				catch(Exception e) {
