@@ -1,4 +1,4 @@
-package chat8;
+package chat10;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 
-public class MultiServer {
+public class MultiServer extends IConnectImpl {
 
 	//멤버변수 
 	static ServerSocket serverSocket = null;
@@ -31,6 +31,7 @@ public class MultiServer {
 	
 	//생성자
 	public MultiServer() {
+		super("kosmo","1234");
 		//클라이언트의 이름과 출력스트림을 저장할 HashMap 컬렉션 생성
 		clientMap = new HashMap<String,PrintWriter>();
 		//HashMap 동기화 설정. 쓰레드가 사용자정보에 동시에 접근하는 것을 차단함.
@@ -138,6 +139,7 @@ public class MultiServer {
 					while(nameCompare.hasNext()) {
 						String nextName = nameCompare.next();
 						if(nextName.equalsIgnoreCase(name)) {
+							name = "";
 							out.println("중복된 이름으로 접속하셔서 강퇴처리되셨습니다.");
 							System.out.println("중복된 이름으로 접속하여 강퇴처리하였습니다.");
 							this.interrupt();
@@ -219,7 +221,6 @@ public class MultiServer {
 							}
 						}
 						else {
-							System.out.println(newSentence+"디버깅4");
 
 							sendAllMsg("",name,newSentence,"All");
 						}
@@ -229,11 +230,8 @@ public class MultiServer {
 				}
 				
 			}
-			catch(SocketException e	 ) {
-				clientMap.remove(name);
-				sendAllMsg("","", name+"님이 퇴장하셨습니다.","All");
-				System.out.println(name + "["+ Thread.currentThread().getName()+"] 퇴장");
-				System.out.println("현재 접속자 수는" + clientMap.size()+"명 입니다.");
+			catch(SocketException e) {
+				
 			}
 			catch(Exception e) {
 				System.out.println("예외 : " + e);
@@ -241,7 +239,10 @@ public class MultiServer {
 			
 			finally {
 				try {
-					
+					clientMap.remove(name);
+					sendAllMsg("","", name+"님이 퇴장하셨습니다.","All");
+					System.out.println(name + "["+ Thread.currentThread().getName()+"] 퇴장");
+					System.out.println("현재 접속자 수는" + clientMap.size()+"명 입니다.");
 					in.close();
 					out.close();
 					socket.close();
@@ -257,6 +258,25 @@ public class MultiServer {
 			//Map에 저장된 객체의 키값(대화명)을 먼저 얻어온다.
 			Iterator<String> it = clientMap.keySet().iterator();
 			
+			if(flag.equals("All")) {
+				
+				String sql = "INSERT INTO chat_talking values "
+						+ "(idx_num.nextval,?,default,?,sysdate)";
+				try {
+					psmt = con.prepareStatement(sql);
+					psmt.setString(1,name);
+					psmt.setString(2, URLDecoder.decode(msg,"UTF-8"));
+					
+					int affected = psmt.executeUpdate();
+					System.out.println(affected + "행이 업데이트 되었습니다.");
+					System.out.println(fname);
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+					
+				}
+				
+			}
 			//저장된 객체(클라이언트)의 갯수만큼 반복한다.
 			while(it.hasNext()) {
 				try {
@@ -271,7 +291,21 @@ public class MultiServer {
 						if(name.equals(clientName)) {
 							//컬렉션에 저장된 접속자명과 일치하는 경우에만 메세지를 전송한다.
 							try {
-								it_out.println("[귓속말]"+URLEncoder.encode(msg,"UTF-8"));
+								it_out.println(URLEncoder.encode(fname,"UTF-8")+"[귓속말]"+URLEncoder.encode(msg,"UTF-8"));
+								String sql = "INSERT INTO chat_talking values "
+										+ "(idx_num.nextval,?,?,?,sysdate)";
+								try {
+									psmt = con.prepareStatement(sql);
+									psmt.setString(1,URLDecoder.decode(fname,"UTF-8"));
+									psmt.setString(2, URLDecoder.decode(name,"UTF-8"));
+									psmt.setString(3, URLDecoder.decode(msg,"UTF-8"));
+										
+									int affected = psmt.executeUpdate();
+									System.out.println(affected + "행이 업데이트 되었습니다.");
+								}
+								catch(Exception e) {
+									
+								}
 							}
 							catch(UnsupportedEncodingException e1) {}
 						}
@@ -293,15 +327,17 @@ public class MultiServer {
 						}
 						else {
 							//메세지를 보낼때 사용되는 부분
-							it_out.println("["+name+"]:"+msg+"\n");
+							it_out.println("["+name+"]:"+URLEncoder.encode(msg,"UTF-8"));
+							
+							}
 						}
 						
 					}
-				}
 				catch(Exception e) {
 					System.out.println("예외"+e);
 				}
-			}
+				}
+			
 			try {
 				out.println(URLEncoder.encode(("> " + name + " ==>" + msg),"UTF-8"));
 			}
