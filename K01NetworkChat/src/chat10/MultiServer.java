@@ -19,6 +19,10 @@ import java.util.Map;
 public class MultiServer extends IConnectImpl {
 
 	//멤버변수 
+	String toFixname = "";
+	String forFixname = "";
+	String blockName ="";
+	String toBlockName = "";
 	static ServerSocket serverSocket = null;
 	static Socket socket = null;
 	boolean acceptChoice;
@@ -219,10 +223,28 @@ public class MultiServer extends IConnectImpl {
 							if(strArr[0].equals("/to")) {
 								sendAllMsg(name,strArr[1], msgContent, "One");
 							}
+							else if(strArr[0].equals("/fixto")) {
+								forFixname = name;
+								toFixname = strArr[1];
+								sendAllMsg(forFixname,toFixname,msgContent, "One");
+							}
+							else if(strArr[0].equals("/unfixto")) {
+								forFixname = "";
+								toFixname = "";
+								sendAllMsg(name,name,"귓속말 고정옵션이 해제되었습니다.","One");
+							}
+							else if(strArr[0].equals("/block")) {
+								blockName = name;
+								toBlockName = strArr[1];
+							}
 						}
 						else {
-
-							sendAllMsg("",name,newSentence,"All");
+							if(forFixname.equals(name)) {
+								sendAllMsg(forFixname,toFixname,newSentence,"One");
+							}
+							else {
+								sendAllMsg("",name,newSentence,"All");
+							}
 						}
 						
 						
@@ -328,7 +350,7 @@ public class MultiServer extends IConnectImpl {
 						else {
 							//메세지를 보낼때 사용되는 부분
 							it_out.println("["+name+"]:"+URLEncoder.encode(msg,"UTF-8"));
-							
+						
 							}
 						}
 						
