@@ -1,4 +1,4 @@
-package chat11;
+package chat12;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -239,9 +239,9 @@ public class MultiServer extends IConnectImpl {
 								sendAllMsg(name,name,blockName+"님을 차단하셨습니다.","One");
 							}
 							else if(strArr[0].equals("/unblock")) {
-								sendAllMsg(name,name,blockName+"님을 차단해제셨습니다.","One");
 								userName = "";
 								blockName = "";
+								sendAllMsg(name,name,blockName+"님을 차단해제셨습니다.","One");
 							}
 						}
 						else {
