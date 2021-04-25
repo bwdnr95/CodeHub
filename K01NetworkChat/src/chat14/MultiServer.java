@@ -35,11 +35,13 @@ public class MultiServer extends IConnectImpl {
 	Map <PrintWriter,String>roomJoiner = new HashMap<PrintWriter,String>();
 	Map <String,String>roomList = new HashMap<String,String>();
 	Map <String,String>passRoom = new HashMap<String,String>();
+	Map <String,PrintWriter>roompeople = new HashMap<String,PrintWriter>();
 	HashSet<String>blackList = new HashSet<String>();
 	HashSet<String>pWords = new HashSet<String>();
 	Scanner scan = new Scanner(System.in);
 	Receiver receiver ;
 	HashSet<String>set =new HashSet<String>();
+	String king = "";
 	//생성자
 	public MultiServer() {
 		super("kosmo","1234");
@@ -179,7 +181,7 @@ public class MultiServer extends IConnectImpl {
 								return;
 							}
 						}
-						if(clientMap.size()==3) {
+						if(clientMap.size()==15) {
 							out.println("채팅방인원제한으로 접속할 수 없습니다.");
 							System.out.println("채팅방인원제한으로 강퇴처리하였습니다.");
 							this.interrupt();
@@ -246,6 +248,7 @@ public class MultiServer extends IConnectImpl {
 								set.add(name);
 								roomJoiner.put(out, passRoom.get(name));
 								roomList.put(name, passRoom.get(name));
+								roompeople.put(name, out);
 								clientMap.remove(name);
 								sendAllMsg(name,name,name+"님이 입장하셨습니다.","room");
 								passRoom.remove(name);
@@ -293,6 +296,7 @@ public class MultiServer extends IConnectImpl {
 								
 							}
 							else if(strArr[0].equals("/makeroom")) {
+								king = name;
 								publicRoom(strArr[1],strArr[2],name);
 								if(strArr.length==4) {
 									privateRoom(strArr[1],strArr[3],name);
@@ -302,6 +306,7 @@ public class MultiServer extends IConnectImpl {
 								}
 								roomList.put(name, strArr[1]);
 								roomJoiner.put(out, strArr[1]);
+								roompeople.put(name,out);
 								set.add(name);
 								clientMap.remove(name);
 							}
@@ -325,6 +330,7 @@ public class MultiServer extends IConnectImpl {
 											roomJoiner.put(out, strArr[1]);
 											roomList.put(name, strArr[1]);
 											set.add(name);
+											roompeople.put(name,out);
 											clientMap.remove(name);
 											System.out.println(set.size());
 											
@@ -332,7 +338,55 @@ public class MultiServer extends IConnectImpl {
 									}
 								}
 							}
+							else if(strArr[0].equals("/roomlist")) {
+								Iterator<String>printRoom = allOfRoomList.keySet().iterator();
+								while(printRoom.hasNext()) {
+									String roomList = printRoom.next();
+									if(privateRoomList.containsKey(roomList)) {
+										sendAllMsg(name, name,"[비공개]"+roomList , "server");
+									}
+									else {
+										sendAllMsg(name, name,roomList , "One");
+									}
+								}
+							}
+							else if(strArr[0].equals("/redcard")) {
+								if(name.equals(king)) {
+									String inroom = roomList.get(name);
+									set.remove(strArr[1]);
+									roomList.remove(strArr[1]);
+									clientMap.put(strArr[1], roompeople.get(strArr[1]));
+									roomJoiner.remove(roompeople.get(strArr[1]));
+									roompeople.remove(strArr[1]);
+									sendAllMsg("",name,strArr[1]+"님이 강퇴당하셨습니다.","room");
+									sendAllMsg(name,strArr[1],inroom+" 방에서 강퇴당하셨습니다.","server");
+									
+								}
+								else {
+									sendAllMsg(name,name,"방장이 아니므로 실행할 수 없습니다.","server");
+								}
+							}
+							else if(strArr[0].equals("/boom")) {
+								if(name.equals(king)) {
+									for(String e : set) {
+										if(roomList.get(name).equals(roomList.get(e))) {
+											sendAllMsg(e,e,"방장이 방을 폭파시켰습니다. 대기실로 이동합니다.","server");
+											clientMap.put(e, roompeople.get(e));
+											roomList.remove(e);
+											roomJoiner.remove(roompeople.get(e));
+											roompeople.remove(e);
+//											set.remove(e);
+											
+										}
+									}
+								}
+								else {
+									sendAllMsg(name,name,"방장이 아니므로 실행할 수 없습니다.","server");
+								}
+							}
+								
 						}
+						
 						else {
 							if(set.contains(name)) {
 								for(String i : set) {
@@ -348,7 +402,7 @@ public class MultiServer extends IConnectImpl {
 								sendAllMsg(forFixname,toFixname,newSentence,"One");
 							}
 							else {
-								sendAllMsg("",name,newSentence+"디버깅","All");
+								sendAllMsg("",name,newSentence,"All");
 							}
 						}
 						
@@ -505,7 +559,17 @@ public class MultiServer extends IConnectImpl {
 //								}
 //							}
 //						}
-						
+						if(flag.equals("server")) {
+							if(name.equals(clientName)) {
+								try {
+									it_out.println("[서버]"+URLEncoder.encode(msg,"UTF-8"));
+								}
+								catch(UnsupportedEncodingException e1) {
+									
+								}
+								
+							}
+						}
 						if(flag.equals("One")) {
 							//flag가 One이면 해당클라이언트 한명에게만 전송한다(귓속말)
 							
