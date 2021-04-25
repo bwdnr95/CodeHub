@@ -1,4 +1,4 @@
-package chat13;
+package chat14;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -15,8 +15,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
-
-import chat13.IConnectImpl;
 
 
 public class MultiServer extends IConnectImpl {
@@ -35,10 +33,13 @@ public class MultiServer extends IConnectImpl {
 	Map<String,String>allOfRoomList =new HashMap<String,String>();
 	Map<String,String>privateRoomList =new HashMap<String,String>();
 	Map <PrintWriter,String>roomJoiner = new HashMap<PrintWriter,String>();
+	Map <String,String>roomList = new HashMap<String,String>();
+	Map <String,String>passRoom = new HashMap<String,String>();
 	HashSet<String>blackList = new HashSet<String>();
 	HashSet<String>pWords = new HashSet<String>();
 	Scanner scan = new Scanner(System.in);
 	Receiver receiver ;
+	HashSet<String>set =new HashSet<String>();
 	//생성자
 	public MultiServer() {
 		super("kosmo","1234");
@@ -46,6 +47,10 @@ public class MultiServer extends IConnectImpl {
 		clientMap = new HashMap<String,PrintWriter>();
 		//HashMap 동기화 설정. 쓰레드가 사용자정보에 동시에 접근하는 것을 차단함.
 		Collections.synchronizedMap(clientMap);
+		Collections.synchronizedMap(allOfRoomList);
+		Collections.synchronizedMap(privateRoomList);
+		Collections.synchronizedMap(roomJoiner);
+		Collections.synchronizedMap(roomList);
 	}
 	//채팅서버 초기화
 	public void init(){
@@ -111,6 +116,8 @@ public class MultiServer extends IConnectImpl {
 		Socket socket;
 		PrintWriter out = null;
 		BufferedReader in = null;
+		
+		
 		/*
 		 내부클래스의 생성자
 		 	: 1명의 클라이언트가 접속할때 생성했던 Socket객체를
@@ -212,12 +219,44 @@ public class MultiServer extends IConnectImpl {
 							 newSentence+=pArr[i]+ " ";
 
 						}
-
+						Iterator<String>sendRoom =roomList.keySet().iterator();
+						Iterator<PrintWriter>findOut =roomJoiner.keySet().iterator();
+//						while(sendRoom.hasNext()) {
+//							String joiner = sendRoom.next();
+//							String joinRoomName = (String)roomList.get(joiner);
+//							if(name.equals(joiner)) {
+//								while(findOut.hasNext()) {
+//									PrintWriter sendObject = findOut.next();
+//									if(roomJoiner.get(sendObject).equals(joinRoomName)) {
+//										set.add(joiner);
+//									}
+//									
+//									
+//								}
+//							}
+//						}
 						if(newSentence==null) break;
 						//서버의 콘솔에 출력되고
-						System.out.println(name + ">>" + newSentence);
+//						System.out.println(name + ">>" + newSentence);
+//						System.out.println(passRoom.get(name));
+//						System.out.println(privateRoomList.get(passRoom.get(name)));
 						
-						
+						if(passRoom.containsKey(name)) {
+							if(privateRoomList.get(passRoom.get(name)).equalsIgnoreCase(s)){
+								set.add(name);
+								roomJoiner.put(out, passRoom.get(name));
+								roomList.put(name, passRoom.get(name));
+								clientMap.remove(name);
+								sendAllMsg(name,name,name+"님이 입장하셨습니다.","room");
+								passRoom.remove(name);
+								
+							}
+							else {
+								sendAllMsg(name,name,"비밀번호가 틀려 입장에 실패하셨습니다.","one");
+								passRoom.remove(name);
+							}
+						}
+										
 						
 						//클라이언트 측으로 전송한다.
 						if(s.charAt(0)=='/') {
@@ -254,30 +293,62 @@ public class MultiServer extends IConnectImpl {
 								
 							}
 							else if(strArr[0].equals("/makeroom")) {
-								publicRoom(strArr[1],strArr[2]);
-								if(strArr[3]!=null) {
-									privateRoom(strArr[1],strArr[3]);
+								publicRoom(strArr[1],strArr[2],name);
+								if(strArr.length==4) {
+									privateRoom(strArr[1],strArr[3],name);
 								}
+								else if(strArr.length==3) {
+									
+								}
+								roomList.put(name, strArr[1]);
 								roomJoiner.put(out, strArr[1]);
+								set.add(name);
 								clientMap.remove(name);
 							}
 							else if(strArr[0].equals("/roomenter")) {
-								Iterator<String>search = privateRoomList.keySet().iterator();
-								while(search.hasNext()) {
-									String searchRoomName = search.next();
+								boolean a = true;
+								Iterator<String>searchPrv = privateRoomList.keySet().iterator();
+								Iterator<String>searchPub = allOfRoomList.keySet().iterator();
+								while(searchPrv.hasNext()) {
+									String searchRoomName = searchPrv.next();
 									if(strArr[1].equals(searchRoomName)) {
-										sendAllMsg(name, name, "비밀번호를 입력해주세요.", "join");
-										
+										sendAllMsg(name, name, "비밀번호를 입력해주세요.", "room");
+										passRoom.put(name, strArr[1]);
+										a = false;
+									}
+								}
+								if(a) {
+									while(searchPub.hasNext()) {
+										String searchRoomName = searchPub.next();
+										if(strArr[1].equals(searchRoomName)) {
+											sendAllMsg(name, name, "채팅방에 입장하셨습니다.", "join");
+											roomJoiner.put(out, strArr[1]);
+											roomList.put(name, strArr[1]);
+											set.add(name);
+											clientMap.remove(name);
+											System.out.println(set.size());
+											
+										}
 									}
 								}
 							}
 						}
 						else {
-							if(forFixname.equals(name)) {
+							if(set.contains(name)) {
+								for(String i : set) {
+									if(name.equals(i)) {
+										System.out.println(i);
+										sendAllMsg("",name,newSentence,"room");
+										
+									}
+								}
+								
+							}
+							else if(forFixname.equals(name)) {
 								sendAllMsg(forFixname,toFixname,newSentence,"One");
 							}
 							else {
-								sendAllMsg("",name,newSentence,"All");
+								sendAllMsg("",name,newSentence+"디버깅","All");
 							}
 						}
 						
@@ -286,11 +357,15 @@ public class MultiServer extends IConnectImpl {
 				}
 				
 			}
+			catch(NullPointerException e){
+				e.printStackTrace();
+			}
 			catch(SocketException e) {
-				
+				e.printStackTrace();
 			}
 			catch(Exception e) {
-				System.out.println("예외 : " + e);
+				e.printStackTrace();
+//				System.out.println("예외 : " + e);
 			}
 			
 			finally {
@@ -322,24 +397,36 @@ public class MultiServer extends IConnectImpl {
 			}
 			print_out.println(name+"님을 포함한 총 "+howMany+"명이 채팅방에 접속중입니다.");
 		}
-		public void publicRoom(String roomName,String limitJoin) {
+		public void publicRoom(String roomName,String limitJoin,String name) {
 			allOfRoomList.put(roomName, limitJoin);
-			sendAllMsg("name", "name", "'"+roomName+"' "+"방을 생성하셨습니다. 총 인원 : 1/"+limitJoin, "one");
+			sendAllMsg(name, name, "'"+roomName+"' "+"방을 생성하셨습니다. 총 인원 : 1/"+limitJoin, "room");
 		}
-		public void privateRoom(String roomName,String passWord) {
+		public void privateRoom(String roomName,String passWord,String name) {
 			privateRoomList.put(roomName, passWord);
-			sendAllMsg("name", "name", "'"+roomName+"' "+"방은 비공개방으로, 비밀번호는"+passWord+"입니다.", "one");
+			sendAllMsg(name,name, "'"+roomName+"' "+"방은 비공개방으로, 비밀번호는 "+passWord+" 입니다.", "room");
 		}
-		public void joinRoom() {
-			receiver = new Receiver(socket);
-		}
+//		public void joinRoom(String room,String name) {
+//			String pass=privateRoomList.get(room);
+//			receiver = new Receiver(socket);
+//			String answer=receiver.passwordReturn();
+//			System.out.println(answer);
+//			if(answer.equals(pass)) {
+//				roomJoiner.put(out,room);
+//				roomList.put(name, room);
+//				set.add(name);
+//				sendAllMsg(name,name,name+"님이 입장하셨습니다.","room");
+//			}
+//			else {
+//				sendAllMsg(name,name,"비밀번호가 틀려 입장에 실패하셨습니다.","one");
+//			}
+//		}
 		
 		//접속된 모든 클라이언트 측으로 서버의 메세지를 Echo해주는 역할 담당
 		public void sendAllMsg(String fname,String name, String msg, String flag) {
 			
 			//Map에 저장된 객체의 키값(대화명)을 먼저 얻어온다.
 			Iterator<String> it = clientMap.keySet().iterator();
-			
+			Iterator<PrintWriter>that =roomJoiner.keySet().iterator();
 			if(flag.equals("All")) {
 				
 				String sql = "INSERT INTO chat_talking values "
@@ -359,91 +446,134 @@ public class MultiServer extends IConnectImpl {
 				}
 				
 			}
-			//저장된 객체(클라이언트)의 갯수만큼 반복한다.
-			while(it.hasNext()) {
-				try {
-					//컬렉션의 key는 클라이언트의 대화명이다.
-					String clientName = it.next();
-					//각 클라이언트의 PrintWriter객체를 얻어온다.
-					PrintWriter it_out = (PrintWriter)clientMap.get(clientName);
-					if(flag.equals("join") ) {
-						if(name.equals(clientName)) {
-							try {
-								it_out.println(URLEncoder.encode(msg,"UTF-8"));
-								
-							}
-							catch(UnsupportedEncodingException e1) {
-								
-							}
+			if(flag.equals("room")) {
+				while(that.hasNext()) {
+					try {
+						PrintWriter that_out = (PrintWriter)that.next();
+						String room = roomJoiner.get(that_out);
+						if(roomList.get(name).equals(room)) {
+							that_out.println(URLEncoder.encode(msg,"UTF-8"));
 						}
-					}
-					if(flag.equals("One")) {
-						//flag가 One이면 해당클라이언트 한명에게만 전송한다(귓속말)
 						
-						if(name.equals(clientName)) {
-							//컬렉션에 저장된 접속자명과 일치하는 경우에만 메세지를 전송한다.
-							try {
-								it_out.println(URLEncoder.encode(fname,"UTF-8")+"[귓속말]"+URLEncoder.encode(msg,"UTF-8"));
-								String sql = "INSERT INTO chat_talking values "
-										+ "(idx_num.nextval,?,?,?,sysdate)";
+					}
+					catch(UnsupportedEncodingException e1) {}
+					catch(NullPointerException e) {}
+				}
+				
+			}
+//			저장된 객체(클라이언트)의 갯수만큼 반복한다.
+			else {
+				
+				while(it.hasNext()) {
+					try {
+						//컬렉션의 key는 클라이언트의 대화명이다.
+						String clientName = it.next();
+						//각 클라이언트의 PrintWriter객체를 얻어온다.
+						PrintWriter it_out = (PrintWriter)clientMap.get(clientName);
+//						if(flag.equals("join") ) {
+//							if(name.equals(clientName)) {
+//								try {
+//									it_out.println(URLEncoder.encode(msg,"UTF-8"));
+//									
+//								}
+//								catch(UnsupportedEncodingException e1) {
+//									
+//								}
+//							}
+//						}
+//					if(flag.equals("room")) {
+//						for(String i : set) {
+//							if(i.equals(clientName)) {
+//								try {
+//									it_out.println(URLEncoder.encode(msg,"UTF-8"));
+//									
+//								}
+//								catch(UnsupportedEncodingException e1) {
+//									
+//								}
+//							}
+//						}
+//					}
+//						if(flag.equals("wrong") ) {
+//							if(name.equals(clientName)) {
+//								try {
+//									it_out.println(URLEncoder.encode(msg,"UTF-8"));
+//									
+//								}
+//								catch(UnsupportedEncodingException e1) {
+//									
+//								}
+//							}
+//						}
+						
+						if(flag.equals("One")) {
+							//flag가 One이면 해당클라이언트 한명에게만 전송한다(귓속말)
+							
+							if(name.equals(clientName)) {
+								//컬렉션에 저장된 접속자명과 일치하는 경우에만 메세지를 전송한다.
 								try {
-									psmt = con.prepareStatement(sql);
-									psmt.setString(1,URLDecoder.decode(fname,"UTF-8"));
-									psmt.setString(2, URLDecoder.decode(name,"UTF-8"));
-									psmt.setString(3, URLDecoder.decode(msg,"UTF-8"));
+									it_out.println(URLEncoder.encode(fname,"UTF-8")+"[귓속말]"+URLEncoder.encode(msg,"UTF-8"));
+									String sql = "INSERT INTO chat_talking values "
+											+ "(idx_num.nextval,?,?,?,sysdate)";
+									try {
+										psmt = con.prepareStatement(sql);
+										psmt.setString(1,URLDecoder.decode(fname,"UTF-8"));
+										psmt.setString(2, URLDecoder.decode(name,"UTF-8"));
+										psmt.setString(3, URLDecoder.decode(msg,"UTF-8"));
 										
-									int affected = psmt.executeUpdate();
-									System.out.println(affected + "행이 업데이트 되었습니다.");
+										int affected = psmt.executeUpdate();
+										System.out.println(affected + "행이 업데이트 되었습니다.");
+									}
+									catch(Exception e) {
+										
+									}
 								}
-								catch(Exception e) {
-									
-								}
+								catch(UnsupportedEncodingException e1) {}
 							}
-							catch(UnsupportedEncodingException e1) {}
+							
 						}
-						
-					}
-					else {
-						//그외에는 모든 클라이언트에게 전송한다
-						
-						/*
+						else {
+							//그외에는 모든 클라이언트에게 전송한다
+							
+							/*
 					 클라이언트에게 메세지를 전달할때 매개변수로 name이
 					 있는 경우와 없는경우를 구분해서 전달하게 된다.
-						 */
-						if(name.equals("")) {
-							//입장,퇴장에서 사용되는 부분
-							try {
-								it_out.println(URLEncoder.encode(msg,"UTF-8"));
-							} 
-							catch(UnsupportedEncodingException e1) {}
-						}
-						else {//차단한 사용자가 보낸 말을 차단당한 사용자에게 보내지 않는다.
-							if(name.equals(userName)) {
-								if(blockName.equals(clientName))
-									continue;
+							 */
+							if(name.equals("")) {
+								//입장,퇴장에서 사용되는 부분
+								try {
+									it_out.println(URLEncoder.encode(msg,"UTF-8"));
+								} 
+								catch(UnsupportedEncodingException e1) {}
+							}
+							else {//차단한 사용자가 보낸 말을 차단당한 사용자에게 보내지 않는다.
+								if(name.equals(userName)) {
+									if(blockName.equals(clientName))
+										continue;
+									else {
+										//메세지를 보낼때 사용되는 부분
+										it_out.println("["+name+"]:"+URLEncoder.encode(msg,"UTF-8"));
+										
+									}
+								}//차단된 사용자가 보낸말을 차단한 사용자에게 보내지 않는다
+								else if(name.equals(blockName)) {
+									if(userName.equals(clientName)) {
+										continue;
+									}
+									else 
+										it_out.println("["+name+"]:"+URLEncoder.encode(msg,"UTF-8"));
+								}
 								else {
-									//메세지를 보낼때 사용되는 부분
 									it_out.println("["+name+"]:"+URLEncoder.encode(msg,"UTF-8"));
-									
 								}
-							}//차단된 사용자가 보낸말을 차단한 사용자에게 보내지 않는다
-							else if(name.equals(blockName)) {
-								if(userName.equals(clientName)) {
-									continue;
-								}
-								else 
-									it_out.println("["+name+"]:"+URLEncoder.encode(msg,"UTF-8"));
+								
 							}
-							else {
-								it_out.println("["+name+"]:"+URLEncoder.encode(msg,"UTF-8"));
-							}
-						
 						}
-					}
 						
-				}
-				catch(Exception e) {
-					System.out.println("예외"+e);
+					}
+					catch(Exception e) {
+						System.out.println("예외"+e);
+					}
 				}
 			}
 			
