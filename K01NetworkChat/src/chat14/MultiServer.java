@@ -343,10 +343,10 @@ public class MultiServer extends IConnectImpl {
 								while(printRoom.hasNext()) {
 									String roomList = printRoom.next();
 									if(privateRoomList.containsKey(roomList)) {
-										sendAllMsg(name, name,"[비공개]"+roomList , "server");
+										sendAllMsg(name, name,"[비공개]"+roomList , "search");
 									}
 									else {
-										sendAllMsg(name, name,roomList , "One");
+										sendAllMsg(name, name,roomList , "One");                                         
 									}
 								}
 							}
@@ -359,11 +359,11 @@ public class MultiServer extends IConnectImpl {
 									roomJoiner.remove(roompeople.get(strArr[1]));
 									roompeople.remove(strArr[1]);
 									sendAllMsg("",name,strArr[1]+"님이 강퇴당하셨습니다.","room");
-									sendAllMsg(name,strArr[1],inroom+" 방에서 강퇴당하셨습니다.","server");
+									sendAllMsg(name,strArr[1],inroom+" 방에서 강퇴당하셨습니다.","One");
 									
 								}
 								else {
-									sendAllMsg(name,name,"방장이 아니므로 실행할 수 없습니다.","server");
+									sendAllMsg(name,name,"방장이 아니므로 실행할 수 없습니다.","room");
 								}
 							}
 							else if(strArr[0].equals("/boom")) {
@@ -412,7 +412,7 @@ public class MultiServer extends IConnectImpl {
 				
 			}
 			catch(NullPointerException e){
-				e.printStackTrace();
+				
 			}
 			catch(SocketException e) {
 				e.printStackTrace();
@@ -559,7 +559,7 @@ public class MultiServer extends IConnectImpl {
 //								}
 //							}
 //						}
-						if(flag.equals("server")) {
+						if(flag.equals("search")) {
 							if(name.equals(clientName)) {
 								try {
 									it_out.println("[서버]"+URLEncoder.encode(msg,"UTF-8"));
