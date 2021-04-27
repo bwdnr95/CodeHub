@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H09Form02.html</title>
+</head>
+<body>
+    <h2>form태그의 하위 요소가 되는 태그들</h2>
+
+    <h3>input 계열의 type="text"</h3>
+    <!--
+    input태그 : form 태그의 허위요소로 type 속성에 따라 다양한 형태로
+        만들어져 사용자로부터 입력이나 선택을 받을 수 있는 태그이다.
+
+        주요속성
+            type : 모양을 나타내는 속성을 지정한다
+                *text : 한줄입력상자
+                *password : 패스워드 입력시 입력값이 노출되지 않게
+                    표시하는 입력상자
+            *checkbox : 여러개의 항목 중 2개 이상의 값을 선택할 수 있는 체크상자.
+            *radio : 여러개의 항목 중 1개만 선택할 수 있는 상자
+            *hidden : 갑소가 모양이 웹브라우저에 표시되지 않고 숨겨진 상태로
+            값을 전송할때 사용하는 입력상자. 사용자는 값을 수정할 수 없고 
+            Javascript를 통해서는 수정이 가능하다.
+
+      -->
+    <form name="frm1">
+        <!-- value속성 : input 태그에 미리 입력된 값을 설정 -->
+        기본텍스트상자 : 
+            <input type="text" name = "n1" value="성낙현" />
+        <br/> 
+            disabled속성 : 입력상자에 비활성화 시키는 속성으로
+                입력,수정을 할 수 없고, 서버로 전송되지 않는다.
+            size 속성 : 입력상자의 길이를 설정한다.
+            maxlength 속성:입력 할 수 있는 문자의 최대길이를 설정한다.
+        <br/>
+     
+        disabled속성 :
+            <input type="text" name="n2" size="40"
+                maxlength="5" value="속성추가"
+                disabled="disabled"/>
+        <br/>
+
+        maxlength속성 : <br><br>
+            <input type="text" name="jumin1" size="6" maxlength="6"/>
+            -
+            <input type="password" size="7" maxlength="7"/>
+            <br><br>
+            <!-- readonly속성 : 읽기전용으로 설정하는 속성. 입력, 수정은
+                할 수 없으나 서버로 전송은 가능함. -->
+            readonly속성 :
+                <input type="text" name="homepage" value="http://"
+                readonly />
+            <br>
+            <br>
+            <!-- submit속성 : <form>태그내에서 입력된 값을 서버로 전송한다. -->
+            <input type="submit" value="서버로 전송하기" />
+    </form>
+    <br><br>
+
+    <!-- 
+        input태그에 name속성이 없으면 값을 입력하더라도 서버로
+        전송은 되지 않는다. 값의 전송은 name속성에 지정된 파라미터명을
+        통해 전송되기 때문이다.
+
+     -->
+    <h3>input 태그의 type속성 보기</h3>
+    <form action="">
+        text : <input type="text" size="6" />
+        <br><br>
+        password : <input type="password" size="6" />
+        <br><br>
+        checkbox : <input type="checkbox" name="ch" size="6" />
+        <br><br>
+        radio : <input type="radio" name="ra" size="6" />
+        <br><br>
+        hidden : 화면에 노출되지 않지만 값은 전송됨
+        <input type="hidden" name="hi" value="값이 존재하고 전송됨" />
+        <br><br>
+        <input type="submit" value="서버로 전송하기" />
+    </form>
+
+    <!-- 
+        chekcbox
+        -체크박스는 여러개의 항목을 선택하는게 가능하다.
+        -name속성을 동일하게 지정하여 그룹화 시켜준다.
+        -value속성은 미리 지정해야한다. 별도로 입력할 수 없고
+            미리입력된 값을 선택하는 형태이다.
+        -선택된 값만 서버로 전송되고, 서버에서는 배열로
+            데이터를 관리한다.
+
+     -->
+    <h3> type="checkbox"</h3>
+
+    <fieldset>
+        <legend>당신의 관심사항은 뭔가요?</legend>
+        <form name="form2">
+            <!-- 화면이 로드될때 미리 체크된 상태를 유지하려면
+            checked 속성을 부여한다. -->
+            <input type="checkbox" name="inter" value="pol" checked="checked"/>정치
+            &nbsp;&nbsp;
+            <input type="checkbox" name="inter" value="eco" />경제
+            &nbsp;&nbsp;
+            <input type="checkbox" name="inter" value="ent" />연예
+            &nbsp;&nbsp;
+            <input type="checkbox" name="inter" value="spo" />스포츠
+            
+            <input type="submit" value="체크박스전송" />
+        </form>
+    </fieldset>
+    <fieldset>
+        <!-- 
+            radio
+            -라디오는 여러개의 항목 중 하나만 선택 가능하다.
+            -그 외의 속성은 checkbox와 동일하다
+            -만약 name속성이 다르게 지정되면 항목이 그룹화되지
+                않기때문에 여러개를 선택할 수 있게 된다.
+         -->
+        <h3>type="radio"</h3>
+            <legend>당신의 성별은?</legend>
+            <form name="form3">
+                <input type="radio" name="gender" value="M" checked="checked" />남자
+                &nbsp;&nbsp;
+                <input type="radio" name="gender" value="W" checked="checked" />여자
+                &nbsp;&nbsp;
+                <input type="radio" name="gender" value="gender" checked="checked" />트렌스젠더
+                <br>
+                <input type="submit" value="전송하기" />
+            </form>
+    </fieldset>
+
+    <!-- 
+        select
+        -여러개의 목록 중 하나를 선택할 때 사용하는 태그로 하위에
+            option태그를 가진다.
+        -기본적으로 하나만 선택 가능하나, multiple옵션을 부여하면
+            체크박스처럼 여러개의 항목을 선택할 수 있다.
+        -size속성은 몇개의 항목을 보옂ㄹ지 결정하는 속성으로 세로로
+            길어지게 된다.
+        -여러개의 항목을 선택할때는 drag&drop 하거나 Ctrl키를 누른상태로
+            선택하면 된다.
+        -미리 선택된 상태로 표시하려면 selected 속성을 사용한다.
+     -->
+    <h3>select태그-하나만선택</h3>
+    <fieldset>
+        <legend>당신의 최종학력은 무엇인가요?</legend>
+
+        <form action="">
+            <select name="grade">
+                <option value="ele">초등학교</option>
+                <option value="mid">중학교</option>
+                <option value="high">고등학교</option>
+                <option value="uni">대학교</option>
+                <option value="uni2">대학원</option>
+            </select>
+            &nbsp;&nbsp;
+            <input type="image" src="./images/button.jpg" />
+
+        </form>
+
+    </fieldset>
+    <h3>select태그-여러개선택</h3>
+    <fieldset>
+        <legend>당신이 좋아하는 걸그룹은?(다중선택가능)</legend>
+
+        <form action="">
+            <select name="girl_group" multiple size="7">
+                <option value="T">트와이스</option>
+                <option value="M">모모랜드</option>
+                <option value="R">레드밸벳</option>
+                <option value="G">여자친구</option>
+                <option value="B">블랙핑크</option>
+            </select>
+            &nbsp;&nbsp;
+            <input type="image" src="./images/button.jpg" />
+
+        </form>
+
+    </fieldset>
+    <!-- 
+        file속성
+        -서버로 전송할 파일선택창을 띄워준다.
+        -전송할 파일의 확장자를 제한하고 싶을때는 accept속성을
+            사용한다.
+        -file속성을 사용할때는 value속성은 아무의미가 없으므로
+            사용하지 않는다.
+     -->
+    <h3>type="file</h3>
+    기본 : <input type="file" name="userfile1" />
+    <br>
+    속성추가 : <input type="file" name="userfile2" accept=".jpg .png .gif" value="첨부파일을 추가"/>
+
+    <!-- 
+        textarea
+        -다른 태그와는 다르게 value속성을 가지고 있지 않고, 태그사이에
+            입력하는 값이 value가 된다.
+        -단, Javascript에서 폼값의 체크를 위해서는 value속성으로
+            접근한다.
+        -소스의 정렬을 위해서 태그사이에 불필요한 줄바꿈이나 공백을
+            주면 그대로 적용되므로 주의해야 한다. 즉, textarea는
+            코드정렬을 하지 않는 것이 좋다.
+     -->
+     <script>
+        function textArea() {
+            document.getElementById("intro").value = "내용을 바꿉니다.";
+            var v = document.getElementById("intro").value;
+            alert(v);
+        }
+        </script>
+    
+        <h3>textarea태그</h3>
+        <textarea name="intro" id="intro" cols="70" rows="5">내용은 여기에 입력됩니다.</textarea>
+        <input type="button" onclick="textArea();" value="난버튼">
+
+    <h3>type="hidden</h3>
+    <form action="">
+        <input type="hidden" name="member_id" value="kosmo" />
+        <input type="submit" value="hidden값 전송하기" />
+
+    </form>
+</body>
+</html>

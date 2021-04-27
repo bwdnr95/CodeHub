@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Hn(Headline태그)</title>
+<!-- 
+	CSS(Cascading Style Sheets)를 HTML문서에 적용하기 위한 선언
+	방법1 : <style>태그를 <head>영역에 선언한 후 해당 속성을 작성한다.
+	방법2 : 스타일을 적용할 태그에 style속성으로 적용한다.(우선순위 가장높음)
+
+
+	h1, h2 , span 태그 선택자를 통해 해당 문서의 태그를 선택하여
+	테두리의 색깔, 모양, 두께를 설정하고 있다.
+ -->
+<style>
+	h1 { border : 10px solid red;}
+	h2 { border:1px solid green;}
+	span { border:1px solid blue;}
+</style>
+</head>
+<body>
+
+	<!-- 
+	Hn태그
+	-제목(헤드라인)을 표시할때 사용하는 태그
+	-블럭엘리먼트(Block Element) : 세로형 배치
+		-> 컨텐츠의 크기에 상관없이 무조건 하나의 블럭을 차지한다.
+	-h1~h6까지 있고 숫자가 작을수록 텍스트를 크게 표현한다.
+	 -->
+	<h1>블럭엘리먼트1</h1>
+	<!-- 인라인 엘리먼트 : 가로형배치 -->
+	<span>span태그1</span>
+	<span>span태그2</span>
+	<span>span태그3</span>
+	<span>span태그1</span>
+	<span>span태그2</span>
+	<span>span태그3</span>
+	
+	<h1 style="text-align:center; background:purple;">성두현기모찌괴물</h1>
+	
+	<span>span태그1</span>
+	<span>span태그2</span>
+	<span>span태그3</span>
+	
+	<hr />
+	
+	<h1>제목1입니다</h1>
+	<h2>제목2입니다.</h2>
+	
+	<!-- 
+	dotted : 테두리를 점선으로 표시함.
+	double : 테두리를 이중실선으로 표시함.
+	 -->
+	<h3 style = "border:1px dotted purple;">제목3입니다.</h3>
+	<h4 style="text-align:right;">제목4입니다.</h4>
+	<h5 style="text-align:center;">제목5입니다.</h5>
+	<h6 style="border:2px double black; width:500px; height:300px; background:yellow;">
+	제목6입니다.
+	</h6>
+	
+</body>
+</html>
